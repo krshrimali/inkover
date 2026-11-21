@@ -62,6 +62,7 @@ class InkoverApp(Gtk.Application):
         self.state = State(self.cfg)
         self.canvases = []
         self.chrome_hidden = False
+        self.capturing = 0     # region selections / screenshots in progress
         self.server = None
         self.recorder = Recorder(self)
         self.connect("activate", self.on_activate)
@@ -161,6 +162,9 @@ class InkoverApp(Gtk.Application):
                                "color": st.color_idx + 1, "size": round(st.size, 1),
                                "recording": self.recorder.elapsed() if self.recorder.active else None,
                                "recording_path": self.recorder.path if self.recorder.active else None,
+                               "recording_target": self.recorder.target,
+                               "recording_geom": self.recorder.geom,
+                               "capturing": self.capturing > 0,
                                "board": st.board, "toolbar_visible": st.toolbar_visible,
                                "palette": ["#%02x%02x%02x" % tuple(int(v * 255) for v in c)
                                            for c in self.cfg.palette],

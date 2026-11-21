@@ -59,6 +59,12 @@ It has four tabs:
   buttons, toolbar, monitors, folders, recording). Changes apply to the running
   overlay immediately, and comments in your config file are preserved
 
+The panel keeps itself out of your captures. If a screenshot or recording
+would include it (same monitor, or a region overlapping it), it hides first and
+comes back when the capture ends. That applies however the recording was
+started: from the panel, the toolbar, a hotkey or `inkover record`. While it's
+hidden, stop the recording with the toolbar's ⏹ button or your record hotkey.
+
 Building it needs `cargo` plus the `gtk4` and `libadwaita` dev packages;
 `install.sh` does this for you.
 

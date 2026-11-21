@@ -73,6 +73,12 @@ pub struct Status {
     pub size: f64,
     pub recording: Option<u64>,
     pub recording_path: Option<String>,
+    /// Connector being recorded, or "region".
+    pub recording_target: Option<String>,
+    /// slurp geometry "X,Y WxH" when recording a region.
+    pub recording_geom: Option<String>,
+    /// A region selection or screenshot is in progress.
+    pub capturing: bool,
     pub board: u64,
     pub toolbar_visible: bool,
     pub palette: Vec<String>,
@@ -94,6 +100,9 @@ pub fn status() -> Option<Status> {
         size: v["size"].as_f64().unwrap_or(5.0),
         recording: v["recording"].as_u64(),
         recording_path: v["recording_path"].as_str().map(String::from),
+        recording_target: v["recording_target"].as_str().map(String::from),
+        recording_geom: v["recording_geom"].as_str().map(String::from),
+        capturing: v["capturing"].as_bool().unwrap_or(false),
         board: v["board"].as_u64().unwrap_or(0),
         toolbar_visible: v["toolbar_visible"].as_bool().unwrap_or(true),
         palette: v["palette"]

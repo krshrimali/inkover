@@ -48,6 +48,11 @@ def screenshot(app, canvas, region=False):
     """Capture the live screen with ink on top, toolbar/HUD hidden."""
     cfg = app.cfg
 
+    app.capturing += 1   # cleared once the shot is written (or selection cancelled)
+
+    def finished():
+        app.capturing = max(0, app.capturing - 1)
+
     def shoot(grim_args, suffix):
         app.set_chrome_hidden(True)
         path = _out_path(cfg, suffix)
@@ -55,6 +60,7 @@ def screenshot(app, canvas, region=False):
         def grab():
             def done(ok, _out):
                 app.set_chrome_hidden(False)
+                finished()
                 if ok:
                     _deliver(app, path, "Screenshot")
                 else:
@@ -68,6 +74,8 @@ def screenshot(app, canvas, region=False):
             geom = out.strip()
             if ok and geom:
                 shoot(["-g", geom], "region")
+            else:
+                finished()
         _run(["slurp", "-d"], picked)
     else:
         shoot(["-o", canvas.connector], canvas.connector)

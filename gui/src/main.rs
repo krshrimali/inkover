@@ -31,6 +31,8 @@ fn build(app: &adw::Application) {
         settings: settings::Settings::load(),
         status: RefCell::new(None),
         updating: Cell::new(false),
+        hidden_since: Cell::new(None),
+        last_place: RefCell::new((None, None)),
     });
 
     let stack = adw::ViewStack::new();
@@ -79,6 +81,7 @@ fn build(app: &adw::Application) {
         let was_recording = Cell::new(false);
         move || {
             let st = ipc::status();
+            ctx.sync_visibility(st.as_ref());
             let recording = st.as_ref().is_some_and(|s| s.recording.is_some());
             if was_recording.replace(recording) && !recording {
                 // A recording just finished: let it land on disk, then refresh the list.
@@ -97,7 +100,8 @@ fn build(app: &adw::Application) {
         }
     };
     tick();
-    gtk::glib::timeout_add_local(Duration::from_millis(600), move || {
+    // Fast enough that a recording started elsewhere hides us within ~0.3s.
+    gtk::glib::timeout_add_local(Duration::from_millis(300), move || {
         tick();
         gtk::glib::ControlFlow::Continue
     });

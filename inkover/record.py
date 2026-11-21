@@ -33,6 +33,8 @@ class Recorder:
         self.path = None
         self.started = None
         self.stopping = False
+        self.target = None     # connector name, or "region"
+        self.geom = None       # slurp geometry "X,Y WxH" for regions
         self.log_path = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "inkover-record.log")
 
     @property
@@ -60,7 +62,10 @@ class Recorder:
             self.app.notify("Recording failed", msg)
             return f"error: {msg}"
         if region:
+            self.app.capturing += 1
+
             def picked(ok, out):
+                self.app.capturing = max(0, self.app.capturing - 1)
                 if ok and out.strip():
                     self._launch(backend, canvas, out.strip())
             _run(["slurp", "-d"], picked)
@@ -106,6 +111,8 @@ class Recorder:
             self.app.notify("Recording failed", e.message)
             return
         print(f"inkover: recording: {' '.join(argv)}", flush=True)
+        self.target = "region" if geom else canvas.connector
+        self.geom = geom
         self.started = time.monotonic()
         self.stopping = False
         self.proc.wait_async(None, self._on_exit)
@@ -136,6 +143,7 @@ class Recorder:
         self.proc = None
         self.started = None
         self.stopping = False
+        self.target = self.geom = None
         self.app.recording_changed()
         if os.path.exists(path) and os.path.getsize(path) > 0:
             mins, s = divmod(secs, 60)

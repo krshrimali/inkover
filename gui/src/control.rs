@@ -163,35 +163,38 @@ impl ControlPage {
             }
         });
 
-        // Screenshots: hide this window first so it isn't in the picture.
-        let shoot = {
+        // Screenshots and recordings: if this window would be captured, hide it
+        // first. The status poll (Ctx::sync_visibility) brings it back afterwards.
+        let capture = {
             let ctx = ctx.clone();
             let with_target = with_target.clone();
+            let target = target.clone();
             move |args: &'static [&'static str]| {
-                let win = ctx.win.clone();
-                win.set_visible(false);
+                let region = args.contains(&"region");
+                // A region could cover us; a monitor only matters if it's ours.
+                // "Focused monitor" is ours, since we were just clicked.
+                let ours = region || target().is_none_or(|t| Some(t) == ctx.own_monitor());
+                if !ours {
+                    with_target(args);
+                    return;
+                }
+                ctx.hide_for_capture();
                 let with_target = with_target.clone();
                 gtk::glib::timeout_add_local_once(std::time::Duration::from_millis(250), move || {
                     with_target(args);
-                    // Region selection waits for the user; come back once it's likely done.
-                    let delay = if args.contains(&"region") { 6000 } else { 1200 };
-                    gtk::glib::timeout_add_local_once(std::time::Duration::from_millis(delay), move || {
-                        win.set_visible(true);
-                        win.present();
-                    });
                 });
             }
         };
-        let s = shoot.clone();
+        let s = capture.clone();
         shot_mon.connect_clicked(move |_| s(&["screenshot", "full"]));
-        let s = shoot.clone();
+        let s = capture.clone();
         shot_reg.connect_clicked(move |_| s(&["screenshot", "region"]));
         let w = with_target.clone();
         export.connect_clicked(move |_| w(&["export"]));
-        let w = with_target.clone();
-        rec_full.connect_clicked(move |_| w(&["record", "full"]));
-        let w = with_target.clone();
-        rec_region.connect_clicked(move |_| w(&["record", "region"]));
+        let s = capture.clone();
+        rec_full.connect_clicked(move |_| s(&["record", "full"]));
+        let s = capture.clone();
+        rec_region.connect_clicked(move |_| s(&["record", "region"]));
         let c = ctx.clone();
         rec_stop.connect_clicked(move |_| c.live(&["record"]));
 
