@@ -31,7 +31,11 @@ COMMANDS_HELP = """commands:
   screenshot [full|region]    capture screen + ink -> file + clipboard
   export                      save ink only as a transparent PNG
   record [full|region]        start/stop screen recording (screen + ink) -> mp4
-  status | quit"""
+  reload                      re-read config.toml (toolbar/monitors need a restart)
+  status | quit
+
+  screenshot/record/export/undo/redo/clear accept a monitor name, e.g.
+  `inkover record full HDMI-A-4`; otherwise the focused monitor is used."""
 
 
 class State:
@@ -63,10 +67,10 @@ class InkoverApp(Gtk.Application):
         self.connect("activate", self.on_activate)
 
     def on_activate(self, *_):
-        css = Gtk.CssProvider()
-        css.load_from_string(BASE_CSS + css_for_palette(self.cfg.palette))
+        self.css = Gtk.CssProvider()
+        self.css.load_from_string(BASE_CSS + css_for_palette(self.cfg.palette))
         Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_USER + 1)
+            Gdk.Display.get_default(), self.css, Gtk.STYLE_PROVIDER_PRIORITY_USER + 1)
 
         mons = Gdk.Display.get_default().get_monitors()
         for i in range(mons.get_n_items()):
@@ -95,7 +99,10 @@ class InkoverApp(Gtk.Application):
             return "error: empty command"
         cmd, rest = args[0], args[1:]
         st = self.state
-        target = source or self._focused_canvas()
+        # Any argument naming a monitor (e.g. `record full HDMI-A-4`) picks the target.
+        named = [c for c in self.canvases if c.connector in rest]
+        rest = [a for a in rest if a not in {c.connector for c in self.canvases}]
+        target = named[0] if named else (source or self._focused_canvas())
 
         if cmd in ("toggle", "draw", "pass"):
             self.set_mode({"toggle": not st.drawing_mode, "draw": True, "pass": False}[cmd])
@@ -147,16 +154,44 @@ class InkoverApp(Gtk.Application):
             return self.recorder.toggle(target, region=rest[:1] == ["region"])
         elif cmd == "export":
             capture.export_ink(self, target)
+        elif cmd == "reload":
+            return self.reload_config()
         elif cmd == "status":
             return json.dumps({"mode": "draw" if st.drawing_mode else "pass", "tool": st.tool,
                                "color": st.color_idx + 1, "size": round(st.size, 1),
                                "recording": self.recorder.elapsed() if self.recorder.active else None,
+                               "recording_path": self.recorder.path if self.recorder.active else None,
+                               "board": st.board, "toolbar_visible": st.toolbar_visible,
+                               "palette": ["#%02x%02x%02x" % tuple(int(v * 255) for v in c)
+                                           for c in self.cfg.palette],
                                "monitors": {c.connector: len(c.strokes) for c in self.canvases}})
         elif cmd == "quit":
             GLib.idle_add(self._shutdown)
         else:
             return "error: unknown command\n" + COMMANDS_HELP
         return "ok"
+
+    def reload_config(self):
+        """Apply config.toml to the running overlay. Most keys are read live."""
+        try:
+            new = Config.load()
+        except Exception as e:
+            return f"error: {e}"
+        old = self.cfg
+        restart = [k for k in ("toolbar", "monitors") if getattr(old, k) != getattr(new, k)]
+        if len(new.palette) != len(old.palette):
+            restart.append("palette size")
+            new.palette = new.palette[:len(old.palette)] + old.palette[len(new.palette):]
+        old.__dict__.update(new.__dict__)   # canvases/toolbars hold this same object
+        st = self.state
+        st.color_idx = min(st.color_idx, len(old.palette) - 1)
+        st.size = max(old.size_min, min(old.size_max, st.size))
+        self.css.load_from_string(BASE_CSS + css_for_palette(old.palette))
+        for c in self.canvases:
+            c.cache_dirty = True
+        self._changed(flash=False)
+        self.redraw()
+        return "ok" if not restart else "ok; restart inkover to apply: " + ", ".join(restart)
 
     def _shutdown(self):
         if self.recorder.active:

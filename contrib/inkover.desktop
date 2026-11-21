@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=inkover
+GenericName=Screen Annotation
+Comment=Draw on your live screen, take screenshots and record
+Exec=inkover-gui
+Icon=document-edit
+Terminal=false
+Categories=Utility;Graphics;
+Keywords=annotate;draw;pen;tablet;screenshot;record;
+StartupWMClass=io.github.krshrimali.inkover.Gui

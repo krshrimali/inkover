@@ -13,6 +13,17 @@ if [ ! -e "$cfg" ]; then
     echo "wrote example config to $cfg"
 fi
 
+if command -v cargo >/dev/null 2>&1; then
+    echo "building the control panel (inkover-gui)…"
+    (cd "$repo/gui" && cargo build --release --quiet)
+    ln -sf "$repo/gui/target/release/inkover-gui" "$HOME/.local/bin/inkover-gui"
+    mkdir -p "$HOME/.local/share/applications"
+    cp "$repo/contrib/inkover.desktop" "$HOME/.local/share/applications/inkover.desktop"
+    echo "linked ~/.local/bin/inkover-gui and installed the app launcher"
+else
+    echo "cargo not found: skipping the GUI (the overlay works without it)"
+fi
+
 missing=""
 for bin in grim slurp wl-copy notify-send; do
     command -v "$bin" >/dev/null 2>&1 || missing="$missing $bin"

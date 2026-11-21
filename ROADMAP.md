@@ -9,6 +9,7 @@ Ideas roughly in priority order. ✅ = shipped.
 - ✅ Laser pointer (fading ink), text tool, Shift for straight lines
 - ✅ Screenshots (monitor / region) to file + clipboard; transparent ink export
 - ✅ Control socket + CLI (`inkover <command>`), TOML config
+- ✅ Rust (GTK4/libadwaita) control panel: control, live tools, library, settings (0.4)
 - ✅ Screen recording (monitor / region, optional audio) via gpu-screen-recorder / wf-recorder (0.3)
 
 ## Next

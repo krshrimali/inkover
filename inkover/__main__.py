@@ -44,11 +44,20 @@ def main(argv=None):
         from .app import COMMANDS_HELP
         print(f"inkover {__version__}: draw on your live screen\n\n"
               f"usage: inkover [command]   (default: toggle; starts the overlay if not running)\n"
-              f"       inkover daemon      run in the foreground\n\n{COMMANDS_HELP}")
+              f"       inkover daemon      run in the foreground\n"
+              f"       inkover gui         open the control panel\n\n{COMMANDS_HELP}")
         return 0
     if args[0] in ("-V", "--version"):
         print(__version__)
         return 0
+    if args[0] == "gui":
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for cand in (os.path.join(here, "gui", "target", "release", "inkover-gui"),
+                     os.path.expanduser("~/.local/bin/inkover-gui")):
+            if os.access(cand, os.X_OK):
+                os.execv(cand, [cand] + args[1:])
+        print("inkover-gui not built: run install.sh (needs cargo)", file=sys.stderr)
+        return 1
     if args[0] == "daemon":
         run_daemon()
         return 0

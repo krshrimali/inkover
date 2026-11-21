@@ -30,9 +30,28 @@ compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
   bind any key (or tablet button) to any action
 - TOML config for palette, sizes, toolbar position, monitors, save folder
 
+## Control panel (GUI)
+
+`inkover gui` (or `inkover-gui`, or "inkover" in your app launcher) opens a
+GTK4/libadwaita control panel written in Rust. It has four tabs:
+
+- **Control**: start/quit the overlay, draw ↔ pass, toolbar, whiteboard;
+  screenshots, ink export and recording (monitor or region, any monitor),
+  recording audio, and buttons to open the output folders
+- **Tools**: tool, colour and size, kept in sync with the overlay live
+- **Library**: recent screenshots, exports and recordings with thumbnails;
+  click to open, or show them in their folder
+- **Settings**: every `config.toml` option (palette, ink, laser, font, pen
+  buttons, toolbar, monitors, folders, recording). Changes apply to the running
+  overlay immediately, and comments in your config file are preserved
+
+Building it needs `cargo` plus the `gtk4` and `libadwaita` dev packages;
+`install.sh` does this for you.
+
 ## Install
 
-Dependencies (Arch names): `python-gobject python-cairo gtk4 gtk4-layer-shell`,
+Dependencies (Arch names): `python-gobject python-cairo gtk4 gtk4-layer-shell`
+(+ `rust libadwaita` for the control panel),
 plus `grim slurp wl-clipboard libnotify` for screenshots, and `gpu-screen-recorder`
 (recommended, especially on NVIDIA) or `wf-recorder` for recording.
 
@@ -83,7 +102,9 @@ inkover undo | redo | clear [all] | board | toolbar | help
 inkover screenshot [full|region]
 inkover export
 inkover record [full|region]   # run again to stop; starts the overlay if needed
-inkover status          # JSON: mode, tool, colour, size, strokes per monitor
+inkover status          # JSON: mode, tool, colour, size, recording, strokes per monitor
+inkover reload          # re-read config.toml
+inkover gui [page]      # control panel: control | tools | library | settings
 inkover quit
 ```
 
