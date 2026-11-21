@@ -7,6 +7,12 @@ overlay on every monitor. Whatever is underneath keeps playing and updating.
 You write on top of it with pressure-sensitive ink, then flip to **pass** mode to
 keep the ink on screen while you click and type in the apps below.
 
+<p align="center">
+  <img src="docs/screenshots/blackboard.png" width="49%" alt="Blackboard mode: pressure-sensitive pen, shapes, arrows, text and highlighter, with the toolbar on the left">
+  <img src="docs/screenshots/whiteboard.png" width="49%" alt="The same ink on the whiteboard background">
+</p>
+<p align="center"><sub>Blackboard and whiteboard backgrounds. The default is transparent, so you draw straight over whatever's on screen.</sub></p>
+
 Built and tested on Hyprland with a Wacom Intuos. It should work on any
 compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
 
@@ -33,7 +39,15 @@ compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
 ## Control panel (GUI)
 
 `inkover gui` (or `inkover-gui`, or "inkover" in your app launcher) opens a
-GTK4/libadwaita control panel written in Rust. It has four tabs:
+GTK4/libadwaita control panel written in Rust.
+
+<p align="center">
+  <img src="docs/screenshots/gui-control.png" width="32%" alt="Control tab: overlay, capture and recording">
+  <img src="docs/screenshots/gui-tools.png" width="32%" alt="Tools tab: live tool, colour and size picker">
+  <img src="docs/screenshots/gui-settings.png" width="32%" alt="Settings tab: palette, ink and more">
+</p>
+
+It has four tabs:
 
 - **Control**: start/quit the overlay, draw ↔ pass, toolbar, whiteboard;
   screenshots, ink export and recording (monitor or region, any monitor),
