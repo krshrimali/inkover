@@ -1,0 +1,29 @@
+# inkover config: copy to ~/.config/inkover/config.toml. Every key is optional.
+
+# Nine colours, picked with keys 1-9 or the toolbar swatches.
+palette = ["#ee3333", "#26bf4d", "#3380f2", "#ffd91a", "#ff8c1a",
+           "#bf4de6", "#ffffff", "#0d0d0d", "#1ad9e6"]
+
+size = 5.0                 # starting stroke size
+size_min = 1.0
+size_max = 80.0
+
+highlighter_alpha = 0.35
+highlighter_scale = 4.0    # highlighter width = size * this
+eraser_scale = 4.0         # eraser radius grows with size too
+laser_fade = 1.2           # seconds before laser ink disappears
+laser_color = "#ff2626"
+font = "Sans Bold"
+text_scale = 5.0           # text height in px = size * this
+
+toolbar = "left"           # left | right | top | bottom | off
+monitors = []              # e.g. ["HDMI-A-3"]; empty = every monitor (env: INKOVER_MONITORS)
+start_in_pass = false
+
+save_dir = "~/Pictures/inkover"
+copy_to_clipboard = true   # screenshots/exports also go to the clipboard (wl-copy)
+notify = true              # desktop notification after saving
+
+# What the pen's side buttons do while held: any tool name, or "none".
+pen_button_lower = "eraser"
+pen_button_upper = "eraser"

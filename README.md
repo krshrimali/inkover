@@ -1,0 +1,97 @@
+# inkover
+
+Draw on your **live** screen with a pen tablet (or mouse) on Wayland.
+
+inkover puts a transparent [layer-shell](https://github.com/wmww/gtk4-layer-shell)
+overlay on every monitor. Whatever is underneath keeps playing and updating.
+You write on top of it with pressure-sensitive ink, then flip to **pass** mode to
+keep the ink on screen while you click and type in the apps below.
+
+Built and tested on Hyprland with a Wacom Intuos. It should work on any
+compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
+
+## Features
+
+- **Pressure-sensitive pen**: line width follows how hard you press
+- **Highlighter, laser pointer** (ink that fades away by itself), **eraser**, **text**
+- **Shapes**: line, arrow, rectangle, ellipse; hold **Shift** for straight pen lines
+- **Pen side buttons / eraser tip** erase while held (configurable)
+- **Draw / pass modes**: in pass mode the ink stays and the screen stays usable;
+  a single floating button brings you back to drawing
+- **Pen-friendly toolbar** with tools, nine colours, size, undo/redo, clear, board
+- **Whiteboard / blackboard** background toggle
+- **Screenshots**: whole monitor or a selected region, ink included. Saved *and*
+  copied to the clipboard
+- **Export ink only** as a transparent PNG
+- **Undo/redo** per monitor, including erases and clears
+- **Scriptable**: `inkover tool laser`, `inkover color 3`, `inkover screenshot region`…
+  bind any key (or tablet button) to any action
+- TOML config for palette, sizes, toolbar position, monitors, save folder
+
+## Install
+
+Dependencies (Arch names): `python-gobject python-cairo gtk4 gtk4-layer-shell`,
+plus `grim slurp wl-clipboard libnotify` for screenshots.
+
+```sh
+git clone https://github.com/krshrimali/inkover ~/Documents/projects/inkover
+~/Documents/projects/inkover/install.sh      # symlinks ~/.local/bin/inkover
+```
+
+Then bind a key (see [`contrib/`](contrib) for Hyprland Lua / conf snippets):
+
+```
+bind = SUPER ALT, D, exec, ~/.local/bin/inkover toggle
+```
+
+## Usage
+
+`inkover` (or `inkover toggle`) starts the overlay in draw mode. Running it again
+switches between **draw** and **pass**.
+
+| Key | Action |
+|---|---|
+| `p` `h` `k` `e` `t` | pen, highlighter, laser, eraser, text |
+| `l` `a` `r` `o` | line, arrow, rectangle, ellipse |
+| `Shift` + drag | straight line with the current tool |
+| `1`–`9` | colour |
+| `[` `]` / scroll | size |
+| `u`, `Ctrl+Z` / `Ctrl+Shift+Z`, `Ctrl+Y` | undo / redo |
+| `c` / `Shift+C` | clear this monitor / all monitors |
+| `b` | board: none → white → black |
+| `Ctrl+S` / `Ctrl+Shift+S` | screenshot monitor / region |
+| `Ctrl+E` | export ink as transparent PNG |
+| `F1` / `F2` | help / hide toolbar |
+| `Esc` | pass mode (use the screen) |
+| `q` | quit |
+
+Text tool: tap where the text should go and type. `Enter` adds a new line;
+`Esc` or tapping elsewhere finishes it.
+
+### Commands
+
+```
+inkover toggle | draw | pass
+inkover tool pen|highlighter|laser|eraser|text|line|arrow|rect|ellipse
+inkover color 1-9
+inkover size + | - | 12
+inkover undo | redo | clear [all] | board | toolbar | help
+inkover screenshot [full|region]
+inkover export
+inkover status          # JSON: mode, tool, colour, size, strokes per monitor
+inkover quit
+```
+
+## Config
+
+Copy [`config.example.toml`](config.example.toml) to `~/.config/inkover/config.toml`.
+`INKOVER_MONITORS=HDMI-A-3,DP-4` limits the overlay to specific outputs.
+
+## Tips
+
+- Map your tablet to a single monitor in the compositor (`input:tablet:output`)
+  and set `monitors` to match. That way only that monitor captures input while drawing.
+- Bind `inkover screenshot region` globally to grab an annotated snippet straight
+  into the clipboard.
+
+See [ROADMAP.md](ROADMAP.md) for what's next.

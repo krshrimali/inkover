@@ -1,0 +1,5 @@
+#!/bin/sh
+# Launcher: runs the inkover package from this checkout (works through symlinks).
+here=$(dirname "$(readlink -f "$0")")
+export PYTHONPATH="$here/..${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -m inkover "$@"
