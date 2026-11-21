@@ -8,7 +8,7 @@ from . import __version__
 from . import ipc
 
 LAYER_SHELL_LIB = "/usr/lib/libgtk4-layer-shell.so"
-STARTERS = {"toggle", "draw", "pass", "start"}
+STARTERS = {"toggle", "draw", "pass", "start", "record", "screenshot"}
 
 
 def run_daemon():
@@ -58,10 +58,12 @@ def main(argv=None):
         if args[0] not in STARTERS:
             print("inkover is not running", file=sys.stderr)
             return 1
-        if not spawn_daemon(start_in_pass=args[0] == "pass"):
+        if not spawn_daemon(start_in_pass=args[0] not in ("draw", "toggle", "start")):
             print("inkover: daemon failed to start; see $XDG_RUNTIME_DIR/inkover.log", file=sys.stderr)
             return 1
-        return 0
+        if args[0] in ("toggle", "draw", "pass", "start"):
+            return 0
+        reply = ipc.send(args)
     print(reply)
     return 0 if not reply.startswith("error") else 1
 

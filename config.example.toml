@@ -21,6 +21,13 @@ monitors = []              # e.g. ["HDMI-A-3"]; empty = every monitor (env: INKO
 start_in_pass = false
 
 save_dir = "~/Pictures/inkover"
+
+# Screen recording (Ctrl+R / Ctrl+Shift+R / `inkover record [region]`)
+record_dir = "~/Videos/inkover"
+record_audio = "none"      # none | mic | desktop | both
+record_fps = 60
+recorder = "auto"          # auto (prefers gpu-screen-recorder) | gpu-screen-recorder | wf-recorder
+record_hide_toolbar = false
 copy_to_clipboard = true   # screenshots/exports also go to the clipboard (wl-copy)
 notify = true              # desktop notification after saving
 

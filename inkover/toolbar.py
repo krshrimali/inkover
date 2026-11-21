@@ -41,6 +41,8 @@ window.inkover { background: transparent; }
                         border: 2px solid rgba(255,255,255,0.15); }
 .inkbar button.swatch.active { border: 3px solid #ffffff; }
 .inkbar button.mode { background: rgba(255,255,255,0.10); }
+.inkbar button.recording { color: #ff3b3b; background: rgba(255,59,59,0.18); }
+.inkbar label.rectime { color: #ff6b6b; font-size: 11px; font-weight: bold; }
 .inkbar label.size { color: #e8e8ea; font-size: 12px; font-weight: bold; }
 .inkbar separator { background: rgba(255,255,255,0.15); margin: 4px; min-width: 1px; min-height: 1px; }
 """
@@ -115,11 +117,23 @@ class Toolbar:
             ("⛶", "Screenshot this monitor (Ctrl+S)", ["screenshot", "full"]),
             ("⬚", "Screenshot a region (Ctrl+Shift+S)", ["screenshot", "region"]),
             ("⇩", "Export ink only, transparent PNG (Ctrl+E)", ["export"]),
+            ("⏺", "Record this monitor (Ctrl+R; Ctrl+Shift+R for a region)", ["record", "full"]),
             ("✕", "Quit (q)", ["quit"]),
         ]
         for i, (glyph, tip, cmd) in enumerate(acts):
             b = self._button(glyph, tip, lambda c=cmd: app.command(c, source=canvas))
             actions.attach(b, i % cols, i // cols, 1, 1)
+            if cmd[0] == "record":
+                self.rec_btn = b
+        # While recording, a red stop button + timer also shows in PASS mode.
+        self.rec_stop = self._button("⏹", "Stop recording", lambda: app.command(["record"]))
+        self.rec_stop.add_css_class("recording")
+        self.rec_stop.set_visible(False)
+        box.append(self.rec_stop)
+        self.rec_time = Gtk.Label()
+        self.rec_time.add_css_class("rectime")
+        self.rec_time.set_visible(False)
+        box.append(self.rec_time)
         self.body.append(actions)
 
     def _button(self, label, tip, fn):
@@ -132,7 +146,15 @@ class Toolbar:
 
     def sync(self):
         st = self.app.state
-        self.widget.set_visible(st.toolbar_visible and not self.app.chrome_hidden)
+        rec = self.app.recorder
+        hide_for_rec = rec.active and self.app.cfg.record_hide_toolbar
+        self.widget.set_visible(st.toolbar_visible and not self.app.chrome_hidden and not hide_for_rec)
+        self.rec_btn.set_visible(not rec.active)
+        self.rec_stop.set_visible(rec.active)
+        self.rec_time.set_visible(rec.active)
+        if rec.active:
+            m, s = divmod(rec.elapsed(), 60)
+            self.rec_time.set_text(f"{m}:{s:02d}")
         self.body.set_visible(st.drawing_mode)
         self.mode_btn.set_label("👆" if st.drawing_mode else "✎")
         self.mode_btn.set_tooltip_text("Use the screen (Esc)" if st.drawing_mode else "Draw")

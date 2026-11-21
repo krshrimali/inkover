@@ -22,6 +22,8 @@ compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
 - **Whiteboard / blackboard** background toggle
 - **Screenshots**: whole monitor or a selected region, ink included. Saved *and*
   copied to the clipboard
+- **Screen recording** of the live screen plus ink (monitor or region) to MP4,
+  with optional mic and/or desktop audio, via gpu-screen-recorder (GPU encoding) or wf-recorder
 - **Export ink only** as a transparent PNG
 - **Undo/redo** per monitor, including erases and clears
 - **Scriptable**: `inkover tool laser`, `inkover color 3`, `inkover screenshot region`…
@@ -31,7 +33,8 @@ compositor that supports `wlr-layer-shell` (Sway, river, niri, KDE…).
 ## Install
 
 Dependencies (Arch names): `python-gobject python-cairo gtk4 gtk4-layer-shell`,
-plus `grim slurp wl-clipboard libnotify` for screenshots.
+plus `grim slurp wl-clipboard libnotify` for screenshots, and `gpu-screen-recorder`
+(recommended, especially on NVIDIA) or `wf-recorder` for recording.
 
 ```sh
 git clone https://github.com/krshrimali/inkover ~/Documents/projects/inkover
@@ -61,6 +64,7 @@ switches between **draw** and **pass**.
 | `b` | board: none → white → black |
 | `Ctrl+S` / `Ctrl+Shift+S` | screenshot monitor / region |
 | `Ctrl+E` | export ink as transparent PNG |
+| `Ctrl+R` / `Ctrl+Shift+R` | start/stop recording monitor / region |
 | `F1` / `F2` | help / hide toolbar |
 | `Esc` | pass mode (use the screen) |
 | `q` | quit |
@@ -78,9 +82,20 @@ inkover size + | - | 12
 inkover undo | redo | clear [all] | board | toolbar | help
 inkover screenshot [full|region]
 inkover export
+inkover record [full|region]   # run again to stop; starts the overlay if needed
 inkover status          # JSON: mode, tool, colour, size, strokes per monitor
 inkover quit
 ```
+
+### Recording
+
+`Ctrl+R`, the ⏺ toolbar button or `inkover record` starts recording the monitor.
+`Ctrl+Shift+R` or `inkover record region` records a selected area. While it's
+running, the toolbar shows a red ⏹ button with a timer, even in pass mode. Run
+the same command again to stop. Videos go to `~/Videos/inkover`. The coloured
+frame and info pop-ups are left out of the video. The toolbar stays in unless
+`record_hide_toolbar = true`. Audio is off by default: set `record_audio` to
+`mic`, `desktop` or `both`.
 
 ## Config
 

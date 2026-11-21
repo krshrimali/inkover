@@ -21,6 +21,7 @@ HELP = [
     "1-9 colour   [ ] / scroll size   u undo   Ctrl+Shift+Z redo",
     "c clear  Shift+C clear all  b board  F2 toolbar",
     "Ctrl+S screenshot  Ctrl+Shift+S region  Ctrl+E export ink",
+    "Ctrl+R record monitor  Ctrl+Shift+R record region (again = stop)",
     "Esc use screen (pass)   q quit   F1 hide help",
 ]
 
@@ -361,8 +362,9 @@ class Canvas:
 
         cmd = None
         if ctrl:
-            cmd = {"z": "redo" if shift else "undo", "y": "redo", "s": "screenshot region" if shift
-                   else "screenshot full", "e": "export"}.get(name)
+            cmd = {"z": "redo" if shift else "undo", "y": "redo",
+                   "s": "screenshot region" if shift else "screenshot full",
+                   "r": "record region" if shift else "record full", "e": "export"}.get(name)
         elif name == "escape":
             cmd = "pass"
         elif name == "c":
@@ -454,14 +456,17 @@ class Canvas:
 
         if self.app.chrome_hidden:
             return
-        if st.drawing_mode:
+        recording = self.app.recorder.active
+        if st.drawing_mode and not recording:
             # Thin coloured frame = the overlay is capturing input.
             cr.set_source_rgba(*st.color, 0.55)
             cr.set_line_width(3)
             cr.rectangle(1.5, 1.5, w - 3, h - 3)
             cr.stroke()
-            if self.hover is not None:
-                self._draw_brush_preview(cr, *self.hover)
+        if st.drawing_mode and self.hover is not None:
+            self._draw_brush_preview(cr, *self.hover)
+        if recording:
+            return
         if now < self.hud_until or (st.drawing_mode and st.show_help):
             self._draw_hud(cr, w, h)
 

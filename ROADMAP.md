@@ -9,6 +9,7 @@ Ideas roughly in priority order. ✅ = shipped.
 - ✅ Laser pointer (fading ink), text tool, Shift for straight lines
 - ✅ Screenshots (monitor / region) to file + clipboard; transparent ink export
 - ✅ Control socket + CLI (`inkover <command>`), TOML config
+- ✅ Screen recording (monitor / region, optional audio) via gpu-screen-recorder / wf-recorder (0.3)
 
 ## Next
 - **Tablet ExpressKeys (pad buttons)**: map Intuos pad buttons to inkover commands
@@ -17,7 +18,7 @@ Ideas roughly in priority order. ✅ = shipped.
 - **Select & move**: lasso strokes, then move, recolour or delete them.
 - **Save & restore sessions**: keep ink as JSON between runs and reopen it later.
 - **Pages**: several boards per monitor (next/prev page), handy for teaching.
-- **Screen recording**: `wf-recorder` start/stop from the toolbar, ink included.
+- **Recording extras**: pause/resume, webcam bubble, GIF export, click/keystroke overlay.
 - **Smoothing / stabiliser**: optional lag-based stabiliser for neater handwriting.
 - **Filled shapes & dashed lines**, opacity slider, custom colour picker.
 - **Spotlight / zoom**: dim the screen except around the pen, or magnify a region.

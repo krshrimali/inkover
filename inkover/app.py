@@ -10,6 +10,7 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Gtk, Gdk, Gio, GLib
 
 from . import capture, ipc
+from .record import Recorder
 from .canvas import Canvas, BOARDS
 from .config import Config, TOOLS
 from .toolbar import BASE_CSS, css_for_palette
@@ -29,6 +30,7 @@ COMMANDS_HELP = """commands:
   undo | redo | clear [all] | board | toolbar | help
   screenshot [full|region]    capture screen + ink -> file + clipboard
   export                      save ink only as a transparent PNG
+  record [full|region]        start/stop screen recording (screen + ink) -> mp4
   status | quit"""
 
 
@@ -57,6 +59,7 @@ class InkoverApp(Gtk.Application):
         self.canvases = []
         self.chrome_hidden = False
         self.server = None
+        self.recorder = Recorder(self)
         self.connect("activate", self.on_activate)
 
     def on_activate(self, *_):
@@ -140,11 +143,14 @@ class InkoverApp(Gtk.Application):
             self.redraw()
         elif cmd == "screenshot":
             capture.screenshot(self, target, region=rest[:1] == ["region"])
+        elif cmd == "record":
+            return self.recorder.toggle(target, region=rest[:1] == ["region"])
         elif cmd == "export":
             capture.export_ink(self, target)
         elif cmd == "status":
             return json.dumps({"mode": "draw" if st.drawing_mode else "pass", "tool": st.tool,
                                "color": st.color_idx + 1, "size": round(st.size, 1),
+                               "recording": self.recorder.elapsed() if self.recorder.active else None,
                                "monitors": {c.connector: len(c.strokes) for c in self.canvases}})
         elif cmd == "quit":
             GLib.idle_add(self._shutdown)
@@ -153,6 +159,11 @@ class InkoverApp(Gtk.Application):
         return "ok"
 
     def _shutdown(self):
+        if self.recorder.active:
+            # Let the recorder finalise the file, then quit.
+            self.recorder.stop()
+            GLib.timeout_add(200, self._shutdown)
+            return False
         if self.server:
             self.server.close()
         self.quit()
@@ -191,6 +202,19 @@ class InkoverApp(Gtk.Application):
                 c.flash_hud()
             if not self.state.drawing_mode:
                 c._update_input_region()
+
+    def notify(self, title, body=""):
+        print(f"inkover: {title}: {body}", flush=True)
+        if self.cfg.notify:
+            capture._run(["notify-send", "-a", "inkover", "-t", "4000", title, body])
+
+    def recording_changed(self, tick=False):
+        for c in self.canvases:
+            c.toolbar.sync()
+            if not tick:
+                c.area.queue_draw()
+                if not self.state.drawing_mode:
+                    c._update_input_region()
 
     def redraw(self):
         for c in self.canvases:

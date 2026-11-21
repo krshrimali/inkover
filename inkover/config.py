@@ -46,6 +46,11 @@ class Config:
     toolbar: str = "left"             # left | right | top | bottom | off
     monitors: list = field(default_factory=list)   # empty = all
     save_dir: str = os.path.expanduser("~/Pictures/inkover")
+    record_dir: str = os.path.expanduser("~/Videos/inkover")
+    record_audio: str = "none"        # none | mic | desktop | both
+    record_fps: int = 60
+    recorder: str = "auto"            # auto | gpu-screen-recorder | wf-recorder
+    record_hide_toolbar: bool = False # keep the toolbar out of recordings
     copy_to_clipboard: bool = True
     notify: bool = True
     start_in_pass: bool = False
@@ -68,7 +73,7 @@ class Config:
                 val = [parse_color(c) for c in val][:9]
             elif key == "laser_color":
                 val = parse_color(val)
-            elif key == "save_dir":
+            elif key in ("save_dir", "record_dir"):
                 val = os.path.expanduser(val)
             setattr(cfg, key, val)
         if os.environ.get("INKOVER_START_PASS"):
